@@ -57,6 +57,10 @@ FROM anapsix/alpine-java:8_server-jre
 RUN apk update && \
         apk add curl && \
         mkdir -p /root/onos
+
+WORKDIR /root
+COPY bash_profile .bash_profile
+
 WORKDIR /root/onos
 
 # Install ONOS
