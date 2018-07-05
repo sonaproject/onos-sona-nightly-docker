@@ -21,6 +21,7 @@ RUN rm -rf /src/onos/apps/openstacknetworking
 RUN rm -rf /src/onos/apps/openstacknode
 RUN rm -rf /src/onos/apps/openstacknetworkingui
 RUN rm -rf /src/onos/apps/openstacktelemetry
+RUN rm -rf /src/onos/apps/openstackvtap
 
 # Download SONA buck definition file
 RUN git clone https://github.com/sonaproject/onos-sona-buck-defs.git buck-defs
@@ -41,6 +42,7 @@ RUN cp -R apps/openstacknetworking ../src/onos/apps
 RUN cp -R apps/openstacknode ../src/onos/apps
 RUN cp -R apps/openstacknetworkingui ../src/onos/apps
 RUN cp -R apps/openstacktelemetry ../src/onos/apps
+RUN cp -R apps/openstackvtap ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
