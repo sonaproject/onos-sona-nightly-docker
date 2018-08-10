@@ -46,13 +46,16 @@ RUN cp -R apps/openstacktelemetry ../src/onos/apps
 RUN cp -R apps/openstackvtap ../src/onos/apps
 RUN cp -R apps/openstacktroubleshoot ../src/onos/apps
 
+# Replace broken deps
+RUN sed -i 's/com_google_code_gson_gson/gson/g' ../src/onos/apps/openstacktelemetry/BUCK
+
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
 # in the runtime environment - this saves a lot of space
 # FIXME - dependence on ONOS_ROOT and git at build time is a hack to work around
 # build problems
 WORKDIR /src/onos
-RUN apt-get update && apt-get install -y zip python git bzip2 && \
+RUN apt-get update && apt-get install -y zip python bzip2 && \
         export ONOS_ROOT=/src/onos && \
         tools/build/onos-buck build onos && \
         mkdir -p /src/tar && \
