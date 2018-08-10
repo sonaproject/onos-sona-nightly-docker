@@ -22,6 +22,7 @@ RUN rm -rf /src/onos/apps/openstacknode
 RUN rm -rf /src/onos/apps/openstacknetworkingui
 RUN rm -rf /src/onos/apps/openstacktelemetry
 RUN rm -rf /src/onos/apps/openstackvtap
+RUN rm -rf /src/onos/apps/openstacktroubleshoot
 
 # Download SONA buck definition file
 RUN git clone https://github.com/sonaproject/onos-sona-buck-defs.git buck-defs
@@ -43,6 +44,7 @@ RUN cp -R apps/openstacknode ../src/onos/apps
 RUN cp -R apps/openstacknetworkingui ../src/onos/apps
 RUN cp -R apps/openstacktelemetry ../src/onos/apps
 RUN cp -R apps/openstackvtap ../src/onos/apps
+RUN cp -R apps/openstacktroubleshoot ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
@@ -57,7 +59,6 @@ RUN apt-get update && apt-get install -y zip python git bzip2 && \
         cd /src/tar && \
         tar -xf /src/onos/buck-out/gen/tools/package/onos-package/onos.tar.gz --strip-components=1 && \
         rm -rf /src/onos/buck-out .git
-
 
 # Second stage is the runtime environment
 FROM anapsix/alpine-java:8_server-jre
@@ -87,7 +88,8 @@ LABEL org.label-schema.name="ONOS" \
 
 RUN   touch apps/org.onosproject.drivers/active && \
       touch apps/org.onosproject.openflow-base/active && \
-      touch apps/org.onosproject.openstacknetworking/active
+      touch apps/org.onosproject.openstacknetworking/active && \
+      touch apps/org.onosproject.openstacktroubleshoot/active 
 
 # Ports
 # 6653 - OpenFlow
