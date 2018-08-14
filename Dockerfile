@@ -6,34 +6,14 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV ONOS_VERSION 1.13.2
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos
+RUN git clone https://gerrit.onosproject.org/onos onos
 RUN mkdir -p /src/
 RUN cp -R onos /src/
-
-# Remove SONA apps sources
-RUN rm -rf /src/onos/apps/openstacknetworking
-RUN rm -rf /src/onos/apps/openstacknode
-RUN rm -rf /src/onos/apps/openstacknetworkingui
-
-# Download and patch ONOS core changes which affect ONOS
-RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch
-RUN cp patch/${ONOS_VERSION}/*.patch /src/onos/
-RUN cp patch/patch.sh /src/onos/
-WORKDIR /src/onos
-RUN ./patch.sh
-
-# Download latest SONA app sources
-WORKDIR /onos
-RUN git checkout master
-RUN cp -R apps/openstacknetworking ../src/onos/apps
-RUN cp -R apps/openstacknode ../src/onos/apps
-RUN cp -R apps/openstacknetworkingui ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
@@ -57,10 +37,6 @@ FROM anapsix/alpine-java:8_server-jre
 RUN apk update && \
         apk add curl && \
         mkdir -p /root/onos
-
-WORKDIR /root
-COPY bash_profile .bash_profile
-
 WORKDIR /root/onos
 
 # Install ONOS
@@ -78,7 +54,8 @@ LABEL org.label-schema.name="ONOS" \
 
 RUN   touch apps/org.onosproject.drivers/active && \
       touch apps/org.onosproject.openflow-base/active && \
-      touch apps/org.onosproject.openstacknetworking/active
+      touch apps/org.onosproject.openstacknetworking/active && \
+      touch apps/org.onosproject.openstacktroubleshoot/active
 
 # Ports
 # 6653 - OpenFlow
