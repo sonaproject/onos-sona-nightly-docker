@@ -7,13 +7,27 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
+# Configure JAR path
+RUN update-alternatives --install "/usr/bin/jar" "jar" "${JAVA_HOME}/bin/jar" 1 && \
+    update-alternatives --set jar "${JAVA_HOME}/bin/jar"
+
 # Install dependencies
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone https://gerrit.onosproject.org/onos onos
-RUN mkdir -p /src/
-RUN cp -R onos /src/
+RUN git clone https://gerrit.onosproject.org/onos onos && \
+        mkdir -p /src/ && \
+        cp -R onos /src/
+
+# Download SONA buck definition file
+RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs
+RUN cp bazel-defs/sona.bzl /src/onos/
+RUN sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
+
+# Install Bazel build tool
+RUN apt-get update && apt-get install -y pkg-config zip g++ zlib1g-dev unzip python bzip2 wget && \
+        wget https://github.com/bazelbuild/bazel/releases/download/0.15.2/bazel-0.15.2-installer-linux-x86_64.sh && \
+        chmod +x bazel-0.15.2-installer-linux-x86_64.sh && ./bazel-0.15.2-installer-linux-x86_64.sh --user
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
@@ -21,14 +35,12 @@ RUN cp -R onos /src/
 # FIXME - dependence on ONOS_ROOT and git at build time is a hack to work around
 # build problems
 WORKDIR /src/onos
-RUN apt-get update && apt-get install -y zip python git bzip2 && \
-        export ONOS_ROOT=/src/onos && \
-        tools/build/onos-buck build onos && \
+RUN export ONOS_ROOT=/src/onos && \
+        /root/bin/bazel build onos && \
         mkdir -p /src/tar && \
         cd /src/tar && \
-        tar -xf /src/onos/buck-out/gen/tools/package/onos-package/onos.tar.gz --strip-components=1 && \
-        rm -rf /src/onos/buck-out .git
-
+        tar -xf /src/onos/bazel-bin/onos.tar.gz --strip-components=1 && \
+        rm -rf /src/onos/bazel-bin .git
 
 # Second stage is the runtime environment
 FROM anapsix/alpine-java:8_server-jre
