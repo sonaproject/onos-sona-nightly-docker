@@ -6,10 +6,7 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-
-# Configure JAR path
-RUN update-alternatives --install "/usr/bin/jar" "jar" "${JAVA_HOME}/bin/jar" 1 && \
-    update-alternatives --set jar "${JAVA_HOME}/bin/jar"
+ENV BAZEL_VERSION 0.15.2
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
@@ -20,14 +17,9 @@ RUN git clone https://gerrit.onosproject.org/onos onos && \
         cp -R onos /src/
 
 # Download SONA buck definition file
-RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs
-RUN cp bazel-defs/sona.bzl /src/onos/
-RUN sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
-
-# Install Bazel build tool
-RUN apt-get update && apt-get install -y pkg-config zip g++ zlib1g-dev unzip python bzip2 wget && \
-        wget https://github.com/bazelbuild/bazel/releases/download/0.15.2/bazel-0.15.2-installer-linux-x86_64.sh && \
-        chmod +x bazel-0.15.2-installer-linux-x86_64.sh && ./bazel-0.15.2-installer-linux-x86_64.sh --user
+RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
+        cp bazel-defs/sona.bzl /src/onos/ && \
+        sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
@@ -35,12 +27,18 @@ RUN apt-get update && apt-get install -y pkg-config zip g++ zlib1g-dev unzip pyt
 # FIXME - dependence on ONOS_ROOT and git at build time is a hack to work around
 # build problems
 WORKDIR /src/onos
-RUN export ONOS_ROOT=/src/onos && \
-        /root/bin/bazel build onos && \
+RUN apt-get update && apt-get install -y zip python git bzip2 build-essential && \
+        curl -L -o bazel.sh https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh && \
+        chmod +x bazel.sh && \
+        ./bazel.sh --user && \
+        export ONOS_ROOT=/src/onos && \
+        ln -s /usr/lib/jvm/java-8-oracle/bin/jar /etc/alternatives/jar && \
+        ln -s /etc/alternatives/jar /usr/bin/jar && \
+        ~/bin/bazel build onos --verbose_failures && \
         mkdir -p /src/tar && \
         cd /src/tar && \
         tar -xf /src/onos/bazel-bin/onos.tar.gz --strip-components=1 && \
-        rm -rf /src/onos/bazel-bin .git
+        rm -rf /src/onos/bazel-* .git
 
 # Second stage is the runtime environment
 FROM anapsix/alpine-java:8_server-jre
