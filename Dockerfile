@@ -6,34 +6,20 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV ONOS_VERSION 1.13.2
+ENV BAZEL_VERSION 0.15.2
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos
-RUN mkdir -p /src/
-RUN cp -R onos /src/
+RUN git clone https://gerrit.onosproject.org/onos onos && \
+        mkdir -p /src/ && \
+        cp -R onos /src/
 
-# Remove SONA apps sources
-RUN rm -rf /src/onos/apps/openstacknetworking
-RUN rm -rf /src/onos/apps/openstacknode
-RUN rm -rf /src/onos/apps/openstacknetworkingui
-
-# Download and patch ONOS core changes which affect ONOS
-RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch
-RUN cp patch/${ONOS_VERSION}/*.patch /src/onos/
-RUN cp patch/patch.sh /src/onos/
-WORKDIR /src/onos
-RUN ./patch.sh
-
-# Download latest SONA app sources
-WORKDIR /onos
-RUN git checkout master
-RUN cp -R apps/openstacknetworking ../src/onos/apps
-RUN cp -R apps/openstacknode ../src/onos/apps
-RUN cp -R apps/openstacknetworkingui ../src/onos/apps
+# Download SONA buck definition file
+RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
+        cp bazel-defs/sona.bzl /src/onos/ && \
+        sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
@@ -41,14 +27,18 @@ RUN cp -R apps/openstacknetworkingui ../src/onos/apps
 # FIXME - dependence on ONOS_ROOT and git at build time is a hack to work around
 # build problems
 WORKDIR /src/onos
-RUN apt-get update && apt-get install -y zip python git bzip2 && \
+RUN apt-get update && apt-get install -y zip python git bzip2 build-essential && \
+        curl -L -o bazel.sh https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh && \
+        chmod +x bazel.sh && \
+        ./bazel.sh --user && \
         export ONOS_ROOT=/src/onos && \
-        tools/build/onos-buck build onos && \
+        ln -s /usr/lib/jvm/java-8-oracle/bin/jar /etc/alternatives/jar && \
+        ln -s /etc/alternatives/jar /usr/bin/jar && \
+        ~/bin/bazel build onos --verbose_failures && \
         mkdir -p /src/tar && \
         cd /src/tar && \
-        tar -xf /src/onos/buck-out/gen/tools/package/onos-package/onos.tar.gz --strip-components=1 && \
-        rm -rf /src/onos/buck-out .git
-
+        tar -xf /src/onos/bazel-bin/onos.tar.gz --strip-components=1 && \
+        rm -rf /src/onos/bazel-* .git
 
 # Second stage is the runtime environment
 FROM anapsix/alpine-java:8_server-jre
@@ -57,10 +47,6 @@ FROM anapsix/alpine-java:8_server-jre
 RUN apk update && \
         apk add curl && \
         mkdir -p /root/onos
-
-WORKDIR /root
-COPY bash_profile .bash_profile
-
 WORKDIR /root/onos
 
 # Install ONOS
@@ -78,7 +64,8 @@ LABEL org.label-schema.name="ONOS" \
 
 RUN   touch apps/org.onosproject.drivers/active && \
       touch apps/org.onosproject.openflow-base/active && \
-      touch apps/org.onosproject.openstacknetworking/active
+      touch apps/org.onosproject.openstacknetworking/active && \
+      touch apps/org.onosproject.openstacktroubleshoot/active
 
 # Ports
 # 6653 - OpenFlow
