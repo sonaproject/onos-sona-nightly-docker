@@ -7,19 +7,38 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV BAZEL_VERSION 0.15.2
+ENV ONOS_VERSION 1.14.0
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone https://gerrit.onosproject.org/onos onos && \
+RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
         mkdir -p /src/ && \
         cp -R onos /src/
+
+# Remove SONA apps sources
+RUN rm -rf /src/onos/apps/openstacknetworking
+RUN rm -rf /src/onos/apps/openstacknode
+RUN rm -rf /src/onos/apps/openstacknetworkingui
+RUN rm -rf /src/onos/apps/openstacktelemetry
+RUN rm -rf /src/onos/apps/openstackvtap
+RUN rm -rf /src/onos/apps/openstacktroubleshoot
 
 # Download SONA buck definition file
 RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
         cp bazel-defs/sona.bzl /src/onos/ && \
         sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
+
+# Download latest SONA app sources
+WORKDIR /onos
+RUN git checkout master
+RUN cp -R apps/openstacknetworking ../src/onos/apps
+RUN cp -R apps/openstacknode ../src/onos/apps
+RUN cp -R apps/openstacknetworkingui ../src/onos/apps
+RUN cp -R apps/openstacktelemetry ../src/onos/apps
+RUN cp -R apps/openstackvtap ../src/onos/apps
+RUN cp -R apps/openstacktroubleshoot ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
