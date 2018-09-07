@@ -55,6 +55,11 @@ COPY --from=builder /src/tar/ .
 # Configure ONOS to log to stdout
 RUN sed -ibak '/log4j.rootLogger=/s/$/, stdout/' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.logging.cfg
 
+# Configure ONOS to activate HTTPS
+RUN sed -ibak 's/org.osgi.service.http.secure.enabled=false/org.osgi.service.http.secure.enabled=true/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
+RUN sed -ibak 's/OBF:1xtn1w1u1uob1xtv1y7z1xtn1unn1w1o1xtv/onos-sona/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
+RUN sed -ibak 's/etc\/keystore/..\/keystore\/keystore.jks/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
+
 LABEL org.label-schema.name="ONOS" \
       org.label-schema.description="SDN Controller" \
       org.label-schema.usage="http://wiki.onosproject.org" \
