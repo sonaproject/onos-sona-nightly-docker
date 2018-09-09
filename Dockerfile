@@ -18,12 +18,7 @@ RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos 
         cp -R onos /src/
 
 # Remove SONA apps sources
-RUN rm -rf /src/onos/apps/openstacknetworking
-RUN rm -rf /src/onos/apps/openstacknode
-RUN rm -rf /src/onos/apps/openstacknetworkingui
-RUN rm -rf /src/onos/apps/openstacktelemetry
-RUN rm -rf /src/onos/apps/openstackvtap
-RUN rm -rf /src/onos/apps/openstacktroubleshoot
+RUN rm -rf /src/onos/apps/openstack*
 
 # Download SONA buck definition file
 RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
@@ -33,12 +28,7 @@ RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs
 # Download latest SONA app sources
 WORKDIR /onos
 RUN git checkout master
-RUN cp -R apps/openstacknetworking ../src/onos/apps
-RUN cp -R apps/openstacknode ../src/onos/apps
-RUN cp -R apps/openstacknetworkingui ../src/onos/apps
-RUN cp -R apps/openstacktelemetry ../src/onos/apps
-RUN cp -R apps/openstackvtap ../src/onos/apps
-RUN cp -R apps/openstacktroubleshoot ../src/onos/apps
+RUN cp -R apps/openstack* ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
