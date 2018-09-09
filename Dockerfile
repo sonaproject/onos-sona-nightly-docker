@@ -12,39 +12,30 @@ ENV ONOS_VERSION 1.13.2
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos
-RUN mkdir -p /src/
-RUN cp -R onos /src/
+RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
+    mkdir -p /src/ && \
+    cp -R onos /src/
 
 # Remove SONA apps sources
-RUN rm -rf /src/onos/apps/openstacknetworking
-RUN rm -rf /src/onos/apps/openstacknode
-RUN rm -rf /src/onos/apps/openstacknetworkingui
-RUN rm -rf /src/onos/apps/openstacktelemetry
-RUN rm -rf /src/onos/apps/openstackvtap
-RUN rm -rf /src/onos/apps/openstacktroubleshoot
+RUN rm -rf /src/onos/apps/openstack*
 
 # Download SONA buck definition file
-RUN git clone https://github.com/sonaproject/onos-sona-buck-defs.git buck-defs
-RUN cp buck-defs/sona.defs /src/onos/
-RUN sed -i 's/modules.defs/sona.defs/g' /src/onos/onos.defs
+RUN git clone https://github.com/sonaproject/onos-sona-buck-defs.git buck-defs && \
+    cp buck-defs/sona.defs /src/onos/ && \
+    sed -i 's/modules.defs/sona.defs/g' /src/onos/onos.defs
 
 # Download and patch ONOS core changes which affect ONOS
-RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch
-RUN cp patch/${ONOS_VERSION}/*.patch /src/onos/
-RUN cp patch/patch.sh /src/onos/
+RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
+    cp patch/${ONOS_VERSION}/*.patch /src/onos/ && \
+    cp patch/patch.sh /src/onos/
+
 WORKDIR /src/onos
 RUN ./patch.sh
 
 # Download latest SONA app sources
 WORKDIR /onos
-RUN git checkout master
-RUN cp -R apps/openstacknetworking ../src/onos/apps
-RUN cp -R apps/openstacknode ../src/onos/apps
-RUN cp -R apps/openstacknetworkingui ../src/onos/apps
-RUN cp -R apps/openstacktelemetry ../src/onos/apps
-RUN cp -R apps/openstackvtap ../src/onos/apps
-RUN cp -R apps/openstacktroubleshoot ../src/onos/apps
+RUN git checkout master && \
+    cp -R apps/openstack* ../src/onos/apps
 
 # Replace broken deps
 RUN sed -i 's/com_google_code_gson_gson/gson/g' ../src/onos/apps/openstacktelemetry/BUCK
@@ -92,7 +83,7 @@ LABEL org.label-schema.name="ONOS" \
 RUN   touch apps/org.onosproject.drivers/active && \
       touch apps/org.onosproject.openflow-base/active && \
       touch apps/org.onosproject.openstacknetworking/active && \
-      touch apps/org.onosproject.openstacktroubleshoot/active 
+      touch apps/org.onosproject.openstacktroubleshoot/active
 
 # Ports
 # 6653 - OpenFlow
