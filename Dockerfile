@@ -6,7 +6,7 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV BAZEL_VERSION 0.15.2
+ENV BAZEL_VERSION 0.17.1
 ENV ONOS_VERSION 1.14.0
 
 # Install dependencies
@@ -24,6 +24,14 @@ RUN rm -rf /src/onos/apps/openstack*
 RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
         cp bazel-defs/sona.bzl /src/onos/ && \
         sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
+
+# Download and patch ONOS core changes which affect ONOS
+RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
+    cp patch/${ONOS_VERSION}/*.patch /src/onos/ && \
+    cp patch/patch.sh /src/onos/
+
+WORKDIR /src/onos
+RUN ./patch.sh
 
 # Download latest SONA app sources
 WORKDIR /onos
