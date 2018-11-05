@@ -7,7 +7,7 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV BAZEL_VERSION 0.15.2
-ENV ONOS_VERSION 1.14.0
+ENV ONOS_VERSION 1.14.1
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
