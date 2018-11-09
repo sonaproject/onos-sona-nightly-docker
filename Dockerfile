@@ -12,7 +12,7 @@ ENV BAZEL_VERSION 0.15.2
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone https://gerrit.onosproject.org/onos onos && \
+RUN git clone -b onos-1.15 https://gerrit.onosproject.org/onos onos && \
         mkdir -p /src/ && \
         cp -R onos /src/
 
