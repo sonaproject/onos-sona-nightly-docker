@@ -35,7 +35,7 @@ RUN ./patch.sh
 
 # Download latest SONA app sources
 WORKDIR /onos
-RUN git checkout master
+RUN git checkout onos-1.15
 RUN cp -R apps/openstack* ../src/onos/apps
 
 # Build ONOS
