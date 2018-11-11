@@ -18,7 +18,7 @@ RUN git clone -b onos-1.15 https://gerrit.onosproject.org/onos onos && \
 
 # Download SONA buck definition file
 RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
-        cp bazel-defs/sona.bzl /src/onos/tools/build/bazel/ && \
+        cp bazel-defs/sona.bzl /src/onos/ && \
         sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
 
 # Build ONOS
