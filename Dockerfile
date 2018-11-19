@@ -6,20 +6,30 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV BAZEL_VERSION 0.19.0
+ENV BAZEL_VERSION 0.15.2
+ENV ONOS_VERSION 1.15.0-rc1
+ENV ONOS_LATEST_BRANCH onos-1.15
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone -b onos-1.15 https://gerrit.onosproject.org/onos onos && \
+RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
         mkdir -p /src/ && \
         cp -R onos /src/
 
-# Download SONA buck definition file
+# Remove SONA apps sources
+RUN rm -rf /src/onos/apps/openstack*
+
+# Download SONA bazel definition file
 RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
         cp bazel-defs/sona.bzl /src/onos/ && \
         sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
+
+# Download latest SONA app sources
+WORKDIR /onos
+RUN git checkout ${ONOS_LATEST_BRANCH}
+RUN cp -R apps/openstack* ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
