@@ -37,6 +37,26 @@ WORKDIR /onos
 RUN git checkout onos-1.15 && \
     cp -R apps/openstack* ../src/onos/apps
 
+# Copy BUCK scripts
+RUN git checkout 1.15.0-rc1 && \
+    cp apps/openstacknetworking/BUCK ../src/onos/apps/openstacknetworking && \
+    cp apps/openstacknetworking/api/BUCK ../src/onos/apps/openstacknetworking/api && \
+    cp apps/openstacknetworking/app/BUCK ../src/onos/apps/openstacknetworking/app && \
+    cp apps/openstacknode/BUCK ../src/onos/apps/openstacknode && \
+    cp apps/openstacknode/openstack4j.bucklet ../src/onos/apps/openstacknode && \
+    cp apps/openstacknode/api/BUCK ../src/onos/apps/openstacknode/api && \
+    cp apps/openstacknode/app/BUCK ../src/onos/apps/openstacknode/app && \
+    cp apps/openstacknetworkingui/BUCK ../src/onos/apps/openstacknetworkingui && \
+    cp apps/openstacktelemetry/BUCK ../src/onos/apps/openstacktelemetry && \
+    cp apps/openstacktelemetry/api/BUCK ../src/onos/apps/openstacktelemetry/api && \
+    cp apps/openstacktelemetry/app/BUCK ../src/onos/apps/openstacktelemetry/app && \
+    cp apps/openstackvtap/BUCK ../src/onos/apps/openstackvtap && \
+    cp apps/openstackvtap/api/BUCK ../src/onos/apps/openstackvtap/api && \
+    cp apps/openstackvtap/app/BUCK ../src/onos/apps/openstackvtap/app && \
+    cp apps/openstacktroubleshoot/BUCK ../src/onos/apps/openstacktroubleshoot && \
+    cp apps/openstacktroubleshoot/api/BUCK ../src/onos/apps/openstacktroubleshoot/api && \
+    cp apps/openstacktroubleshoot/app/BUCK ../src/onos/apps/openstacktroubleshoot/app
+
 # Replace broken deps
 RUN sed -i 's/com_google_code_gson_gson/gson/g' ../src/onos/apps/openstacktelemetry/BUCK
 
