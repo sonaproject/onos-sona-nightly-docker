@@ -6,7 +6,7 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV ONOS_VERSION 1.13.3
+ENV ONOS_VERSION 1.13.7
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
