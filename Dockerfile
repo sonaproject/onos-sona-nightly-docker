@@ -26,6 +26,14 @@ RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs
         cp bazel-defs/sona.bzl /src/onos/ && \
         sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
 
+# Download and patch ONOS core changes which affect ONOS
+RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
+    cp patch/${ONOS_VERSION}/*.patch /src/onos/ && \
+    cp patch/patch.sh /src/onos/
+
+WORKDIR /src/onos
+RUN ./patch.sh
+
 # Download latest SONA app sources
 WORKDIR /onos
 RUN git checkout ${ONOS_LATEST_BRANCH}
