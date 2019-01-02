@@ -7,6 +7,7 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_VERSION 1.13.7
+ENV ONOS_LATEST_BRANCH onos-1.15
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git cpio
@@ -34,7 +35,7 @@ RUN ./patch.sh
 
 # Download latest SONA app sources
 WORKDIR /onos
-RUN git checkout onos-1.15 && \
+RUN git checkout ${ONOS_LATEST_BRANCH} && \
     cp -R apps/openstack* ../src/onos/apps
 
 # Copy BUCK build scripts
