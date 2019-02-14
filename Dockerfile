@@ -1,5 +1,5 @@
 # First stage is the build environment
-FROM sgrio/java-oracle:jdk_8 as builder
+FROM opensona/java-oracle:jdk_8 as builder
 MAINTAINER Jian Li <gunine@sk.com>
 
 # Set the environment variables
