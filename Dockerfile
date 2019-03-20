@@ -6,7 +6,7 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV ONOS_VERSION 1.13.9-rc2
+ENV ONOS_VERSION 1.13.9-rc3
 ENV ONOS_LATEST_BRANCH onos-1.15
 
 # Install dependencies
