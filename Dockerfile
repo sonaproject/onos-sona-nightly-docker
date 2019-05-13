@@ -10,7 +10,7 @@ ENV ONOS_VERSION 1.13.9-rc3
 ENV ONOS_LATEST_BRANCH onos-1.15
 
 # Install dependencies
-RUN apt-get update && apt-get install -y git cpio
+RUN apt-get update && apt-get install -y git cpio git-review
 
 # Copy in the source
 RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
@@ -36,6 +36,7 @@ RUN ./patch.sh
 # Download latest SONA app sources
 WORKDIR /onos
 RUN git checkout ${ONOS_LATEST_BRANCH} && \
+    git review -d 21892 && \
     cp -R apps/openstack* ../src/onos/apps
 
 # Copy BUCK build scripts
