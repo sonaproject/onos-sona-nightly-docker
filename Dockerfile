@@ -36,7 +36,6 @@ RUN ./patch.sh
 # Download latest SONA app sources
 WORKDIR /onos
 RUN git checkout ${ONOS_LATEST_BRANCH} && \
-    git review -d 21892 && \
     cp -R apps/openstack* ../src/onos/apps
 
 # Copy BUCK build scripts
