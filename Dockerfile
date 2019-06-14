@@ -6,38 +6,22 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV BAZEL_VERSION 0.19.0
-ENV ONOS_VERSION 1.15.0
+ENV BAZEL_VERSION 0.23.0
 ENV ONOS_LATEST_BRANCH onos-1.15
+ENV K8S_BAZEL_BRANCH k8s
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
+RUN git clone --branch ${ONOS_LATEST_BRANCH} https://gerrit.onosproject.org/onos onos && \
         mkdir -p /src/ && \
         cp -R onos /src/
 
-# Remove SONA apps sources
-RUN rm -rf /src/onos/apps/openstack*
-
 # Download SONA bazel definition file
-RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
+RUN git clone --branch ${K8S_BAZEL_BRANCH} https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
         cp bazel-defs/sona.bzl /src/onos/ && \
         sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
-
-# Download and patch ONOS core changes which affect ONOS
-RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
-    cp patch/${ONOS_VERSION}/*.patch /src/onos/ && \
-    cp patch/patch.sh /src/onos/
-
-WORKDIR /src/onos
-RUN ./patch.sh
-
-# Download latest SONA app sources
-WORKDIR /onos
-RUN git checkout ${ONOS_LATEST_BRANCH}
-RUN cp -R apps/openstack* ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
@@ -87,8 +71,7 @@ LABEL org.label-schema.name="ONOS" \
 
 RUN   touch apps/org.onosproject.drivers/active && \
       touch apps/org.onosproject.openflow-base/active && \
-      touch apps/org.onosproject.openstacknetworking/active && \
-      touch apps/org.onosproject.openstacktroubleshoot/active
+      touch apps/org.onosproject.k8s-networking/active
 
 # Ports
 # 6653 - OpenFlow
