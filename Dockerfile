@@ -12,7 +12,7 @@ ENV ONOS_VERSION 1.15.0
 ENV K8S_BAZEL_BRANCH k8s
 
 # Install dependencies
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git git-review
 
 # Copy in the source
 RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
