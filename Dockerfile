@@ -7,14 +7,18 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV BAZEL_VERSION 1.0.0
-ENV ONOS_VERSION 1.15.0
+ENV ONOS_VERSION 98220659bd844f8f6a5f4beaa7004da046725eb9
+ENV ONOS_SNAPSHOT 1.15-snapshot
 ENV ONOS_LATEST_BRANCH onos-1.15
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git
 
 # Copy in the source
-RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
+RUN git clone --branch ${ONOS_LATEST_BRANCH} https://gerrit.onosproject.org/onos onos && \
+        cd onos && \
+        git reset --hard ${ONOS_VERSION} && \
+        cd ../ && \
         mkdir -p /src/ && \
         cp -R onos /src/
 
@@ -28,7 +32,7 @@ RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs
 
 # Download and patch ONOS core changes which affect ONOS
 RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
-    cp patch/${ONOS_VERSION}/*.patch /src/onos/ && \
+    cp patch/${ONOS_SNAPSHOT}/* /src/onos/ && \
     cp patch/patch.sh /src/onos/
 
 WORKDIR /src/onos
@@ -45,7 +49,7 @@ RUN cp -R apps/openstack* ../src/onos/apps
 # FIXME - dependence on ONOS_ROOT and git at build time is a hack to work around
 # build problems
 WORKDIR /src/onos
-RUN apt-get update && apt-get install -y zip python git bzip2 build-essential && \
+RUN apt-get update && apt-get install -y zip python python3 git bzip2 build-essential && \
         curl -L -o bazel.sh https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh && \
         chmod +x bazel.sh && \
         ./bazel.sh --user && \
