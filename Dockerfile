@@ -6,40 +6,37 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV BAZEL_VERSION 0.19.0
+ENV BAZEL_VERSION 1.0.0
 ENV ONOS_LATEST_BRANCH onos-1.15
-ENV ONOS_VERSION 1.15.0
+ENV ONOS_VERSION c5bbd3c15e6d4cc715e1dadc9b21ca13c406e241
 ENV K8S_BAZEL_BRANCH k8s
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git git-review
 
 # Copy in the source
-RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
+RUN git clone --branch ${ONOS_LATEST_BRANCH} https://gerrit.onosproject.org/onos onos && \
+        cd onos && \
+	git reset --hard ${ONOS_VERSION} && \
         mkdir -p /src/ && \
+        cd ../ && \
         cp -R onos /src/
 
-# Download SONA bazel definition file
-RUN git clone --branch ${K8S_BAZEL_BRANCH} https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
-        cp bazel-defs/sona.bzl /src/onos/ && \
-        sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
+COPY sona.bzl /src/onos/
+RUN sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
 
 # Download and patch ONOS core changes which affect ONOS
-RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
-    cp patch/${ONOS_VERSION}/*.patch /src/onos/ && \
-    cp patch/patch.sh /src/onos/
+# RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
+#    cp patch/${ONOS_VERSION}/*.patch /src/onos/ && \
+#    cp patch/patch.sh /src/onos/
 
 WORKDIR /src/onos
-RUN ./patch.sh
+# RUN ./patch.sh
 
 # Download latest SONA app sources
 WORKDIR /onos
 RUN git checkout ${ONOS_LATEST_BRANCH} && \
     cp -R apps/k8s* ../src/onos/apps
-
-# Copy latest dependencies
-RUN rm -rf /src/onos/tools/build/bazel/generate_workspace.bzl
-COPY latest/tools/build/bazel/generate_workspace.bzl /src/onos/tools/build/bazel/generate_workspace.bzl
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
@@ -76,9 +73,9 @@ COPY --from=builder /src/tar/ .
 RUN sed -ibak '/log4j.rootLogger=/s/$/, stdout/' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.logging.cfg
 
 # Configure ONOS to activate HTTPS
-RUN sed -ibak 's/org.osgi.service.http.secure.enabled=false/org.osgi.service.http.secure.enabled=true/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
-RUN sed -ibak 's/OBF:1xtn1w1u1uob1xtv1y7z1xtn1unn1w1o1xtv/onos-sona/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
-RUN sed -ibak 's/etc\/keystore/..\/keystore\/keystore.jks/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
+# RUN sed -ibak 's/org.osgi.service.http.secure.enabled=false/org.osgi.service.http.secure.enabled=true/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
+# RUN sed -ibak 's/OBF:1xtn1w1u1uob1xtv1y7z1xtn1unn1w1o1xtv/onos-sona/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
+# RUN sed -ibak 's/etc\/keystore/..\/keystore\/keystore.jks/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
 
 LABEL org.label-schema.name="ONOS" \
       org.label-schema.description="SDN Controller" \
