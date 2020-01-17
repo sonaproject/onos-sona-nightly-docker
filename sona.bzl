@@ -76,26 +76,6 @@ SONA_APPS = [
     "//apps/k8s-networking:onos-apps-k8s-networking-oar",
 ]
 
-APP_JARS = [
-    "//apps/cpman/api:onos-apps-cpman-api",
-    "//apps/routing-api:onos-apps-routing-api",
-    "//apps/dhcp/api:onos-apps-dhcp-api",
-    "//apps/dhcp/app:onos-apps-dhcp-app",
-    "//apps/imr/api:onos-apps-imr-api",
-    "//apps/imr/app:onos-apps-imr-app",
-    "//apps/dhcprelay/app:onos-apps-dhcprelay-app",
-    "//apps/dhcprelay/web:onos-apps-dhcprelay-web",
-    "//apps/fwd:onos-apps-fwd",
-    "//apps/iptopology-api:onos-apps-iptopology-api",
-    "//apps/routing/common:onos-apps-routing-common",
-    "//apps/vtn/vtnrsc:onos-apps-vtn-vtnrsc",
-    "//apps/vtn/sfcmgr:onos-apps-vtn-sfcmgr",
-    "//apps/vtn/vtnmgr:onos-apps-vtn-vtnmgr",
-    "//apps/vtn/vtnweb:onos-apps-vtn-vtnweb",
-    "//apps/kafka-integration/api:onos-apps-kafka-integration-api",
-    "//apps/kafka-integration/app:onos-apps-kafka-integration-app",
-]
-
 FEATURES = [
     "//tools/package/features:onos-thirdparty-base",
     "//tools/package/features:onos-thirdparty-web",
@@ -109,5 +89,4 @@ FEATURES = [
     "//tools/package/features:onos-security",
 ]
 
-APPS = ONOS_DRIVERS + ONOS_PROVIDERS + ONOS_APPS + \
-       SONA_APPS
+APPS = ONOS_DRIVERS + ONOS_PROVIDERS + ONOS_APPS + SONA_APPS
