@@ -20,7 +20,8 @@ RUN git clone --branch ${ONOS_LATEST_BRANCH} https://gerrit.onosproject.org/onos
 	git reset --hard ${ONOS_VERSION} && \
         mkdir -p /src/ && \
         cd ../ && \
-        cp -R onos /src/
+        cp -R onos /src/ && \
+        rm -rf /src/onos/apps/k8s*
 
 COPY sona.bzl /src/onos/
 RUN sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
@@ -36,6 +37,7 @@ WORKDIR /src/onos
 # Download latest SONA app sources
 WORKDIR /onos
 RUN git checkout ${ONOS_LATEST_BRANCH} && \
+    git pull && \
     cp -R apps/k8s* ../src/onos/apps
 
 # Build ONOS
