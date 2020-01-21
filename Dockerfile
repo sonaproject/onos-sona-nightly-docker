@@ -7,7 +7,7 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV BAZEL_VERSION 1.0.0
-ENV ONOS_VERSION 98220659bd844f8f6a5f4beaa7004da046725eb9
+ENV ONOS_VERSION c5bbd3c15e6d4cc715e1dadc9b21ca13c406e241
 ENV ONOS_SNAPSHOT 1.15-snapshot
 ENV ONOS_LATEST_BRANCH onos-1.15
 
@@ -18,30 +18,27 @@ RUN apt-get update && apt-get install -y git
 RUN git clone --branch ${ONOS_LATEST_BRANCH} https://gerrit.onosproject.org/onos onos && \
         cd onos && \
         git reset --hard ${ONOS_VERSION} && \
+	mkdir -p /src/ && \
         cd ../ && \
-        mkdir -p /src/ && \
-        cp -R onos /src/
+        cp -R onos /src/ && \
+        rm -rf /src/onos/apps/openstack*
 
-# Remove SONA apps sources
-RUN rm -rf /src/onos/apps/openstack*
-
-# Download SONA bazel definition file
-RUN git clone https://github.com/sonaproject/onos-sona-bazel-defs.git bazel-defs && \
-        cp bazel-defs/sona.bzl /src/onos/ && \
-        sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
+COPY sona.bzl /src/onos/
+RUN sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
 
 # Download and patch ONOS core changes which affect ONOS
-RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
-    cp patch/${ONOS_SNAPSHOT}/* /src/onos/ && \
-    cp patch/patch.sh /src/onos/
+# RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
+#    cp patch/${ONOS_SNAPSHOT}/* /src/onos/ && \
+#    cp patch/patch.sh /src/onos/
 
 WORKDIR /src/onos
-RUN ./patch.sh
+# RUN ./patch.sh
 
 # Download latest SONA app sources
 WORKDIR /onos
-RUN git checkout ${ONOS_LATEST_BRANCH}
-RUN cp -R apps/openstack* ../src/onos/apps
+RUN git checkout ${ONOS_LATEST_BRANCH} && \
+    git pull && \
+    cp -R apps/openstack* ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
