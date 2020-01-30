@@ -16,6 +16,7 @@ COMPILE_DEPS = [
     '//lib:jersey-client',
     '//lib:httpclient-osgi',
     '//lib:httpcore-osgi',
+    '//lib:commons-net',
     '//lib:commons-codec',
     '//lib:openstack4j-core',
     '//lib:openstack4j-http-connector',
