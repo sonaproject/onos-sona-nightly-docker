@@ -6,14 +6,19 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV ONOS_VERSION 1.13.9
+ENV ONOS_VERSION 1.13.10
+ENV ONOS_STABLE_BRANCH onos-1.13
 ENV ONOS_LATEST_BRANCH onos-1.15
+ENV ONOS_STABLE_SNAPSHOT b770e38b89d91fc1b7cc1f454b142caf56f39886
 
 # Install dependencies
-RUN apt-get update && apt-get install -y git cpio git-review
+RUN apt-get update && apt-get install -y git cpio git-review build-essential
 
 # Copy in the source
-RUN git clone --branch ${ONOS_VERSION} https://gerrit.onosproject.org/onos onos && \
+RUN git clone --branch ${ONOS_STABLE_BRANCH} https://www.github.com/opennetworkinglab/onos onos && \
+    cd onos && \
+    git reset --hard ${ONOS_STABLE_SNAPSHOT} && \
+    cd ../ && \
     mkdir -p /src/ && \
     cp -R onos /src/
 
@@ -22,8 +27,8 @@ RUN rm -rf /src/onos/apps/openstack*
 
 # Download SONA buck definition file
 RUN git clone https://github.com/sonaproject/onos-sona-buck-defs.git buck-defs && \
-    cp buck-defs/sona.defs /src/onos/ && \
-    sed -i 's/modules.defs/sona.defs/g' /src/onos/onos.defs
+    cp buck-defs/sona.defs /src/onos/sona.defs && \
+    sed -i /src/onos/onos.defs -e 's/modules.defs/sona.defs/g'
 
 # Download and patch ONOS core changes which affect ONOS
 RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
