@@ -9,7 +9,7 @@ ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_VERSION 1.13.10
 ENV ONOS_STABLE_BRANCH onos-1.13
 ENV ONOS_LATEST_BRANCH onos-1.15
-ENV ONOS_STABLE_SNAPSHOT b770e38b89d91fc1b7cc1f454b142caf56f39886
+ENV ONOS_STABLE_SNAPSHOT 130cead269a74b9dfdcdc4339f46e559c107ed54
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git cpio git-review build-essential
