@@ -7,18 +7,13 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_VERSION 1.13.10
-ENV ONOS_STABLE_BRANCH onos-1.13
 ENV ONOS_LATEST_BRANCH onos-1.15
-ENV ONOS_STABLE_SNAPSHOT 707734657e3742f6a5587ced39bcdd38d13d8dff
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git cpio git-review build-essential
 
 # Copy in the source
-RUN git clone --branch ${ONOS_STABLE_BRANCH} https://www.github.com/opennetworkinglab/onos onos && \
-    cd onos && \
-    git reset --hard ${ONOS_STABLE_SNAPSHOT} && \
-    cd ../ && \
+RUN git clone --branch ${ONOS_VERSION} https://www.github.com/opennetworkinglab/onos onos && \
     mkdir -p /src/ && \
     cp -R onos /src/
 
