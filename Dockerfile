@@ -1,44 +1,43 @@
+ARG JDK_VER=11
+ARG JOBS=2
+ARG BAZEL_VER=2.0.0
 # First stage is the build environment
-FROM opensona/java-oracle:jdk_8 as builder
+FROM azul/zulu-openjdk:${JDK_VER} as builder
 MAINTAINER Jian Li <gunine@sk.com>
 
 # Set the environment variables
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-ENV BAZEL_VERSION 2.0.0
-ENV ONOS_VERSION e6170f67f48a38eb82a1d66080a615bbc11df587
-ENV ONOS_SNAPSHOT 1.15-snapshot
-ENV ONOS_LATEST_BRANCH onos-1.15
+ENV ONOS_BRANCH onos-2.2
 
 # Install dependencies
-RUN apt-get update && apt-get install -y git
+ENV BUILD_DEPS \
+    ca-certificates \
+    zip \
+    python \
+    python3 \
+    git \
+    bzip2 \
+    build-essential \
+    curl \
+    unzip
+RUN apt-get update && apt-get install -y ${BUILD_DEPS}
+
+# Install Bazel
+ARG BAZEL_VER
+RUN curl -L -o bazel.sh https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VER}/bazel-${BAZEL_VER}-installer-linux-x86_64.sh
+RUN chmod +x bazel.sh && ./bazel.sh
 
 # Copy in the source
-RUN git clone --branch ${ONOS_LATEST_BRANCH} https://gerrit.onosproject.org/onos onos && \
-        cd onos && \
-        git reset --hard ${ONOS_VERSION} && \
-	mkdir -p /src/ && \
-        cd ../ && \
-        cp -R onos /src/ && \
-        rm -rf /src/onos/apps/openstack*
+RUN git clone --branch ${ONOS_BRANCH} https://github.com/opennetworkinglab/onos.git onos && \
+        mkdir /src && \
+	cp -R onos /src/onos
 
-COPY sona.bzl /src/onos/
+RUN ls /src/onos
+
+COPY sona.bzl /src/onos/tools/build/bazel/sona.bzl
 RUN sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
-
-# Download and patch ONOS core changes which affect ONOS
-# RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
-#    cp patch/${ONOS_SNAPSHOT}/* /src/onos/ && \
-#    cp patch/patch.sh /src/onos/
-
-WORKDIR /src/onos
-# RUN ./patch.sh
-
-# Download latest SONA app sources
-WORKDIR /onos
-RUN git checkout ${ONOS_LATEST_BRANCH} && \
-    git pull && \
-    cp -R apps/openstack* ../src/onos/apps
 
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
@@ -46,38 +45,24 @@ RUN git checkout ${ONOS_LATEST_BRANCH} && \
 # FIXME - dependence on ONOS_ROOT and git at build time is a hack to work around
 # build problems
 WORKDIR /src/onos
-RUN apt-get update && apt-get install -y zip python python3 git bzip2 build-essential && \
-        curl -L -o bazel.sh https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh && \
-        chmod +x bazel.sh && \
-        ./bazel.sh --user && \
-        export ONOS_ROOT=/src/onos && \
-        ln -s /usr/lib/jvm/java-8-oracle/bin/jar /etc/alternatives/jar && \
-        ln -s /etc/alternatives/jar /usr/bin/jar && \
-        ~/bin/bazel build onos --verbose_failures && \
-        mkdir -p /src/tar && \
-        cd /src/tar && \
-        tar -xf /src/onos/bazel-bin/onos.tar.gz --strip-components=1 && \
-        rm -rf /src/onos/bazel-* .git
+
+ARG JOBS
+ARG JDK_VER
+
+RUN bazel build onos \
+    --jobs ${JOBS} \
+    --verbose_failures \
+    --javabase=@bazel_tools//tools/jdk:absolute_javabase \
+    --host_javabase=@bazel_tools//tools/jdk:absolute_javabase \
+    --define=ABSOLUTE_JAVABASE=/usr/lib/jvm/zulu-${JDK_VER}-amd64
+
+# We extract the tar in the build environment to avoid having to put the tar in
+# the runtime stage. This saves a lot of space.
+RUN mkdir /output
+RUN tar -xf bazel-bin/onos.tar.gz -C /output --strip-components=1
 
 # Second stage is the runtime environment
-FROM anapsix/alpine-java:8_server-jre
-
-# Change to /root directory
-RUN apk update && \
-        apk add curl && \
-        mkdir -p /root/onos
-WORKDIR /root/onos
-
-# Install ONOS
-COPY --from=builder /src/tar/ .
-
-# Configure ONOS to log to stdout
-RUN sed -ibak '/log4j.rootLogger=/s/$/, stdout/' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.logging.cfg
-
-# Configure ONOS to activate HTTPS
-RUN sed -ibak 's/org.osgi.service.http.secure.enabled=false/org.osgi.service.http.secure.enabled=true/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
-RUN sed -ibak 's/OBF:1xtn1w1u1uob1xtv1y7z1xtn1unn1w1o1xtv/onos-sona/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
-RUN sed -ibak 's/etc\/keystore/..\/keystore\/keystore.jks/g' $(ls -d apache-karaf-*)/etc/org.ops4j.pax.web.cfg
+FROM azul/zulu-openjdk:${JDK_VER}
 
 LABEL org.label-schema.name="ONOS" \
       org.label-schema.description="SDN Controller" \
@@ -86,10 +71,16 @@ LABEL org.label-schema.name="ONOS" \
       org.label-scheme.vendor="Open Networking Foundation" \
       org.label-schema.schema-version="1.0"
 
-RUN   touch apps/org.onosproject.drivers/active && \
-      touch apps/org.onosproject.openflow-base/active && \
-      touch apps/org.onosproject.openstacknetworking/active && \
-      touch apps/org.onosproject.openstacktroubleshoot/active
+RUN apt-get update && apt-get install -y curl && \
+	rm -rf /var/lib/apt/lists/*
+
+# Install ONOS in /root/onos
+COPY --from=builder /output/ /root/onos/
+WORKDIR /root/onos
+
+# Set JAVA_HOME (by default not exported by zulu images)
+ARG JDK_VER
+ENV JAVA_HOME /usr/lib/jvm/zulu-${JDK_VER}-amd64
 
 # Ports
 # 6653 - OpenFlow
@@ -98,6 +89,13 @@ RUN   touch apps/org.onosproject.drivers/active && \
 # 8101 - ONOS CLI
 # 9876 - ONOS intra-cluster communication
 EXPOSE 6653 6640 8181 8101 9876
+
+RUN   touch apps/org.onosproject.gui2/active && \
+      touch apps/org.onosproject.drivers/active && \
+      touch apps/org.onosproject.drivers.ovsdb/active && \
+      touch apps/org.onosproject.openflow-base/active && \
+      touch apps/org.onosproject.openstacknetworking/active && \
+      touch apps/org.onosproject.openstacktroubleshoot/active
 
 # Get ready to run command
 ENTRYPOINT ["./bin/onos-service"]

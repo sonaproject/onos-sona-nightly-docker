@@ -8,7 +8,6 @@ UTILS = [
 
 API = [
     "//core/api:onos-api",
-    "//incubator/api:onos-incubator-api",
 ]
 
 CORE = UTILS + API + [
@@ -17,11 +16,7 @@ CORE = UTILS + API + [
     "//core/store/primitives:onos-core-primitives",
     "//core/store/serializers:onos-core-serializers",
     "//core/store/dist:onos-core-dist",
-    "//core/security:onos-security",
     "//core/store/persistence:onos-core-persistence",
-    "//incubator/net:onos-incubator-net",
-    "//incubator/store:onos-incubator-store",
-    "//incubator/rpc:onos-incubator-rpc",
     "//cli:onos-cli",
     "//protocols/openflow/api:onos-protocols-openflow-api",
     "//protocols/openflow/ctl:onos-protocols-openflow-ctl",
@@ -41,10 +36,6 @@ CORE = UTILS + API + [
     "//providers/rest/device:onos-providers-rest-device",
     "//providers/general/device:onos-providers-general-device",
     "//web/api:onos-rest",
-    "//web/gui2:onos-gui2",
-    "//web/gui:onos-gui",
-    "//incubator/protobuf/models/proto:onos-incubator-protobuf-models-proto",
-    "//incubator/protobuf/models:onos-incubator-protobuf-models",
 ]
 
 ONOS_DRIVERS = [
@@ -69,6 +60,8 @@ ONOS_PROVIDERS = [
 
 ONOS_APPS = [
     "//apps/optical-model:onos-apps-optical-model-oar",
+    "//apps/tunnel:onos-apps-tunnel-oar",
+    "//web/gui2:onos-web-gui2-oar",
 ]
 
 SONA_APPS = [
@@ -85,12 +78,8 @@ FEATURES = [
     "//tools/package/features:onos-thirdparty-web",
     "//tools/package/features:onos-api",
     "//tools/package/features:onos-core",
-    "//tools/package/features:onos-incubator",
     "//tools/package/features:onos-cli",
     "//tools/package/features:onos-rest",
-    "//tools/package/features:onos-gui",
-    "//tools/package/features:onos-gui2",
-    "//tools/package/features:onos-security",
 ]
 
 APPS = ONOS_DRIVERS + ONOS_PROVIDERS + ONOS_APPS + SONA_APPS
