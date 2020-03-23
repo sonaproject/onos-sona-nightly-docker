@@ -10,6 +10,7 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_BRANCH onos-2.2
+ENV ONOS_SNAPSHOT 89f6edf61dfeb954a8c2f3ad48a29ca7d3bcb452
 
 # Install dependencies
 ENV BUILD_DEPS \
@@ -31,6 +32,9 @@ RUN chmod +x bazel.sh && ./bazel.sh
 
 # Copy in the source
 RUN git clone --branch ${ONOS_BRANCH} https://github.com/opennetworkinglab/onos.git onos && \
+        cd onos && \
+	git reset --hard ${ONOS_SNAPSHOT} && \
+	cd ../ && \
         mkdir /src && \
 	cp -R onos /src/onos
 
