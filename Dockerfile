@@ -1,5 +1,5 @@
 ARG JDK_VER=11
-ARG JOBS=2
+ARG JOBS=3
 ARG BAZEL_VER=2.0.0
 # First stage is the build environment
 FROM azul/zulu-openjdk:${JDK_VER} as builder
@@ -10,7 +10,7 @@ ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_BRANCH onos-2.2
-ENV ONOS_SNAPSHOT 89f6edf61dfeb954a8c2f3ad48a29ca7d3bcb452
+ENV ONOS_SNAPSHOT a057e04d5e7f6f609259cdde79856e5988b0ba24
 
 # Install dependencies
 ENV BUILD_DEPS \
