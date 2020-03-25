@@ -66,7 +66,7 @@ RUN mkdir /output
 RUN tar -xf bazel-bin/onos.tar.gz -C /output --strip-components=1
 
 # Second stage is the runtime environment
-FROM azul/zulu-openjdk:${JDK_VER}
+FROM azul/zulu-openjdk-alpine:${JDK_VER}-jre
 
 LABEL org.label-schema.name="ONOS" \
       org.label-schema.description="SDN Controller" \
@@ -75,8 +75,8 @@ LABEL org.label-schema.name="ONOS" \
       org.label-scheme.vendor="Open Networking Foundation" \
       org.label-schema.schema-version="1.0"
 
-RUN apt-get update && apt-get install -y curl && \
-	rm -rf /var/lib/apt/lists/*
+RUN apk update && \
+        apk add bash wget curl
 
 # Install ONOS in /root/onos
 COPY --from=builder /output/ /root/onos/
