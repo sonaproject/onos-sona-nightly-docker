@@ -84,7 +84,7 @@ WORKDIR /root/onos
 
 # Set JAVA_HOME (by default not exported by zulu images)
 ARG JDK_VER
-ENV JAVA_HOME /usr/lib/jvm/zulu-${JDK_VER}-amd64
+ENV JAVA_HOME /usr/lib/jvm/zulu${JDK_VER}-ca
 
 # Ports
 # 6653 - OpenFlow
