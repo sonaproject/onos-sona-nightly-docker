@@ -42,6 +42,7 @@ ONOS_DRIVERS = [
     # Drivers
     "//drivers/default:onos-drivers-default-oar",
     "//drivers/ovsdb:onos-drivers-ovsdb-oar",
+    "//drivers/gnmi:onos-drivers-gnmi-oar",
 ]
 
 ONOS_PROVIDERS = [
@@ -58,9 +59,15 @@ ONOS_PROVIDERS = [
     "//providers/general:onos-providers-general-oar",
 ]
 
+PROTOCOL_APPS = [
+    "//protocols/grpc:onos-protocols-grpc-oar",
+    "//protocols/gnmi:onos-protocols-gnmi-oar",
+]
+
 ONOS_APPS = [
     "//apps/optical-model:onos-apps-optical-model-oar",
     "//apps/tunnel:onos-apps-tunnel-oar",
+    "//web/gui:onos-web-gui-oar",
     "//web/gui2:onos-web-gui2-oar",
 ]
 

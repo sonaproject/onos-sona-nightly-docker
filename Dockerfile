@@ -94,7 +94,7 @@ ENV JAVA_HOME /usr/lib/jvm/zulu${JDK_VER}-ca
 # 9876 - ONOS intra-cluster communication
 EXPOSE 6653 6640 8181 8101 9876
 
-RUN   touch apps/org.onosproject.gui2/active && \
+RUN   touch apps/org.onosproject.gui/active && \
       touch apps/org.onosproject.drivers/active && \
       touch apps/org.onosproject.drivers.ovsdb/active && \
       touch apps/org.onosproject.openflow-base/active && \
