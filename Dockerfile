@@ -1,6 +1,6 @@
 ARG JDK_VER=11
 ARG JOBS=2
-ARG BAZEL_VER=2.0.0
+ARG BAZEL_VER=1.2.1
 # First stage is the build environment
 FROM azul/zulu-openjdk:${JDK_VER} as builder
 MAINTAINER Jian Li <gunine@sk.com>
