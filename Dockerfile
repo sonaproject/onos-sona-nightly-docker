@@ -9,8 +9,9 @@ MAINTAINER Jian Li <gunine@sk.com>
 ENV HOME /root
 ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+ENV ONOS_VERSION 2.2.2
 ENV ONOS_BRANCH onos-2.2
-ENV ONOS_SNAPSHOT 608e971696560df05a1ac62d553bea0087a974f3
+ENV ONOS_SNAPSHOT 4d1b1f3f39439a57d69d867d41cb3a4d39bee6b3
 
 # Install dependencies
 ENV BUILD_DEPS \
@@ -43,12 +44,18 @@ RUN ls /src/onos
 COPY sona.bzl /src/onos/tools/build/bazel/sona.bzl
 RUN sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
 
+# Download and patch ONOS core changes which affect ONOS
+RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
+    cp patch/${ONOS_VERSION}/*.patch /src/onos/ && \
+    cp patch/patch.sh /src/onos/
+
 # Build ONOS
 # We extract the tar in the build environment to avoid having to put the tar
 # in the runtime environment - this saves a lot of space
 # FIXME - dependence on ONOS_ROOT and git at build time is a hack to work around
 # build problems
 WORKDIR /src/onos
+RUN ./patch.sh
 
 ARG JOBS
 ARG JDK_VER
