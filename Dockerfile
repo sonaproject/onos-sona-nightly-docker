@@ -1,6 +1,7 @@
 ARG JDK_VER=11
 ARG JOBS=2
 ARG BAZEL_VER=1.2.1
+ARG PROFILE=sona
 # First stage is the build environment
 FROM azul/zulu-openjdk:${JDK_VER} as builder
 MAINTAINER Jian Li <gunine@sk.com>
@@ -11,7 +12,7 @@ ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_VERSION 2.2.2
 ENV ONOS_BRANCH onos-2.2
-ENV ONOS_SNAPSHOT 4d1b1f3f39439a57d69d867d41cb3a4d39bee6b3
+ENV ONOS_SNAPSHOT cf18713872e75374b60b39a92e10a40d17a1e1db
 
 # Install dependencies
 ENV BUILD_DEPS \
@@ -42,6 +43,10 @@ RUN git clone --branch ${ONOS_BRANCH} https://github.com/opennetworkinglab/onos.
 RUN ls /src/onos
 
 COPY sona.bzl /src/onos/tools/build/bazel/sona.bzl
+
+RUN rm -rf /src/onos/BUILD
+COPY BUILD-sona /src/onos/BUILD
+
 RUN sed -i 's/modules.bzl/sona.bzl/g' /src/onos/BUILD
 
 # Download and patch ONOS core changes which affect ONOS
@@ -59,13 +64,15 @@ RUN ./patch.sh
 
 ARG JOBS
 ARG JDK_VER
+ARG PROFILE
 
 RUN bazel build onos \
     --jobs ${JOBS} \
     --verbose_failures \
     --javabase=@bazel_tools//tools/jdk:absolute_javabase \
     --host_javabase=@bazel_tools//tools/jdk:absolute_javabase \
-    --define=ABSOLUTE_JAVABASE=/usr/lib/jvm/zulu-${JDK_VER}-amd64
+    --define=ABSOLUTE_JAVABASE=/usr/lib/jvm/zulu-${JDK_VER}-amd64 \
+    --define profile=${PROFILE}
 
 # We extract the tar in the build environment to avoid having to put the tar in
 # the runtime stage. This saves a lot of space.
