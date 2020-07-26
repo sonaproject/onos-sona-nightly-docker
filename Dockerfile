@@ -2,7 +2,8 @@ ARG JOBS=2
 ARG BAZEL_VER=1.2.1
 ARG PROFILE=sona
 ARG TAG=11.0.8-11.41.23
-ARG JAVA_PATH=/usr/lib/jvm/zulu11-ca-amd64
+ARG JDK_JAVA_PATH=/usr/lib/jvm/zulu11-ca-amd64
+ARG JRE_JAVA_PATH=/usr/lib/jvm/zulu11-ca
 # First stage is the build environment
 FROM azul/zulu-openjdk:${TAG} as builder
 MAINTAINER Jian Li <gunine@sk.com>
@@ -64,7 +65,7 @@ WORKDIR /src/onos
 RUN ./patch.sh
 
 ARG JOBS
-ARG JAVA_PATH
+ARG JDK_JAVA_PATH
 ARG PROFILE
 
 RUN bazel build onos \
@@ -72,7 +73,7 @@ RUN bazel build onos \
     --verbose_failures \
     --javabase=@bazel_tools//tools/jdk:absolute_javabase \
     --host_javabase=@bazel_tools//tools/jdk:absolute_javabase \
-    --define=ABSOLUTE_JAVABASE=${JAVA_PATH} \
+    --define=ABSOLUTE_JAVABASE=${JDK_JAVA_PATH} \
     --define profile=${PROFILE}
 
 # We extract the tar in the build environment to avoid having to put the tar in
@@ -98,8 +99,8 @@ COPY --from=builder /output/ /root/onos/
 WORKDIR /root/onos
 
 # Set JAVA_HOME (by default not exported by zulu images)
-ARG JAVA_PATH
-ENV JAVA_HOME ${JAVA_PATH}
+ARG JRE_JAVA_PATH
+ENV JAVA_HOME ${JRE_JAVA_PATH}
 
 # Ports
 # 6653 - OpenFlow
