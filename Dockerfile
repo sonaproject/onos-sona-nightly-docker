@@ -14,7 +14,6 @@ ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_VERSION 2.2.2
 ENV ONOS_BRANCH onos-2.2
-# ENV ONOS_SNAPSHOT cf18713872e75374b60b39a92e10a40d17a1e1db
 ENV ONOS_SNAPSHOT c2242bdafa6145e76241f81cb8396291b331f925
 
 # Install dependencies
@@ -116,7 +115,8 @@ RUN   touch apps/org.onosproject.gui/active && \
       touch apps/org.onosproject.drivers.ovsdb/active && \
       touch apps/org.onosproject.openflow-base/active && \
       touch apps/org.onosproject.openstacknetworking/active && \
-      touch apps/org.onosproject.openstacktroubleshoot/active
+      touch apps/org.onosproject.openstacktroubleshoot/active && \
+      touch apps/org.onosproject.k8s-networking/active 
 
 # Get ready to run command
 ENTRYPOINT ["./bin/onos-service"]
