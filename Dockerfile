@@ -14,7 +14,11 @@ ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_VERSION 2.2.2
 ENV ONOS_BRANCH onos-2.2
-ENV ONOS_SNAPSHOT 019ce6a7143620fab32b7b0579aa7381aa102af2
+#ENV ONOS_SNAPSHOT b27024ffa194ad400702545d5c067a80e049748c
+ENV ONOS_SNAPSHOT d7f0d00af52391e9bb62953c8f3fc5925f789d85
+ENV REVERT 5bdaf106e4b30208d6acee6ad5bf1d58c9057d66
+ENV REVERT2 f198430fee8d188a8704f0cc06f403f10df70c3a
+#ENV ONOS_SNAPSHOT 019ce6a7143620fab32b7b0579aa7381aa102af2
 
 # Install dependencies
 ENV BUILD_DEPS \
@@ -37,12 +41,19 @@ RUN chmod +x bazel.sh && ./bazel.sh
 # Copy in the source
 RUN git clone --branch ${ONOS_BRANCH} https://github.com/opennetworkinglab/onos.git onos && \
         cd onos && \
+        git config --global user.email "pyguni@gmail.com" && \
+        git config --global user.name "Jian Li" && \
 	git reset --hard ${ONOS_SNAPSHOT} && \
+        git revert ${REVERT} && \
+        git revert ${REVERT2} && \
 	cd ../ && \
         mkdir /src && \
 	cp -R onos /src/onos
 
-RUN ls /src/onos
+#RUN ls /src/onos
+# Remove SONA apps sources
+RUN rm -rf /src/onos/apps/openstack*
+RUN rm -rf /src/onos/apps/k8s-*
 
 COPY sona.bzl /src/onos/tools/build/bazel/sona.bzl
 
@@ -64,9 +75,20 @@ RUN git clone https://github.com/sonaproject/onos-sona-patch.git patch && \
 WORKDIR /src/onos
 RUN ./patch.sh
 
+# Download latest SONA app sources
+WORKDIR /onos
+RUN git checkout ${ONOS_BRANCH} && \
+    git pull && \
+    cp -R apps/openstack* ../src/onos/apps && \
+    cp -R apps/k8s-* ../src/onos/apps
+
 ARG JOBS
 ARG JDK_JAVA_PATH
 ARG PROFILE
+
+WORKDIR /src/onos
+
+RUN git log -10
 
 RUN bazel build onos \
     --jobs ${JOBS} \
