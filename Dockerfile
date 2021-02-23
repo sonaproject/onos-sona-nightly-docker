@@ -14,7 +14,7 @@ ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_VERSION 2.2.2
 ENV ONOS_BRANCH onos-2.2
-ENV ONOS_SNAPSHOT 840156cc4ee9fbdde9a5ab877977312943382e62
+ENV ONOS_SNAPSHOT b9eb11d5b7012ea1619f512b27766dc04f657f72
 ENV REVERT 5bdaf106e4b30208d6acee6ad5bf1d58c9057d66
 ENV REVERT2 f198430fee8d188a8704f0cc06f403f10df70c3a
 
@@ -29,7 +29,7 @@ ENV BUILD_DEPS \
     build-essential \
     curl \
     unzip
-RUN apt-get update && apt-get install -y ${BUILD_DEPS}
+RUN apt-get update && apt-get install git-review -y ${BUILD_DEPS}
 
 # Install Bazel
 ARG BAZEL_VER
@@ -37,7 +37,7 @@ RUN curl -L -o bazel.sh https://github.com/bazelbuild/bazel/releases/download/${
 RUN chmod +x bazel.sh && ./bazel.sh
 
 # Copy in the source
-RUN git clone --branch ${ONOS_BRANCH} https://github.com/opennetworkinglab/onos.git onos && \
+RUN git clone --branch ${ONOS_BRANCH} https://gerrit.onosproject.org/onos onos && \
         cd onos && \
         git config --global user.email "pyguni@gmail.com" && \
         git config --global user.name "Jian Li" && \
@@ -78,7 +78,8 @@ WORKDIR /onos
 RUN git checkout ${ONOS_BRANCH} && \
     git pull && \
     cp -R apps/openstack* ../src/onos/apps && \
-    cp -R apps/k8s-* ../src/onos/apps
+    cp -R apps/k8s-* ../src/onos/apps && \
+    cp -R apps/kubevirt* ../src/onos/apps
 
 ARG JOBS
 ARG JDK_JAVA_PATH
@@ -136,7 +137,8 @@ RUN   touch apps/org.onosproject.gui/active && \
       touch apps/org.onosproject.openflow-base/active && \
       touch apps/org.onosproject.openstacknetworking/active && \
       touch apps/org.onosproject.openstacktroubleshoot/active && \
-      touch apps/org.onosproject.k8s-networking/active 
+      #touch apps/org.onosproject.k8s-networking/active && \
+      touch apps/org.onosproject.kubevirt-networking/active
 
 # Get ready to run command
 ENTRYPOINT ["./bin/onos-service"]
