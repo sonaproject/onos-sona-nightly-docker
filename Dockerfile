@@ -14,7 +14,7 @@ ENV BUILD_NUMBER docker
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV ONOS_VERSION 2.2.2
 ENV ONOS_BRANCH onos-2.2
-ENV ONOS_SNAPSHOT b9eb11d5b7012ea1619f512b27766dc04f657f72
+ENV ONOS_SNAPSHOT eeb5b43236dc63abfcc6c13e1757681fd1b45524
 ENV REVERT 5bdaf106e4b30208d6acee6ad5bf1d58c9057d66
 ENV REVERT2 f198430fee8d188a8704f0cc06f403f10df70c3a
 
@@ -77,6 +77,7 @@ RUN ./patch.sh
 WORKDIR /onos
 RUN git checkout ${ONOS_BRANCH} && \
     git pull && \
+    git reset --hard ${ONOS_SNAPSHOT} && \
     cp -R apps/openstack* ../src/onos/apps && \
     cp -R apps/k8s-* ../src/onos/apps && \
     cp -R apps/kubevirt* ../src/onos/apps
